@@ -1,0 +1,28 @@
+{
+  "name": "evil-hangman",
+  "version": "0.0.0",
+  "description": "Evil hangman in node",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/rooftopsparrow/evil-hangman.git"
+  },
+  "author": "Jonathan Nicholson",
+  "bugs": {
+    "url": "https://github.com/rooftopsparrow/evil-hangman/issues"
+  },
+  "homepage": "https://github.com/rooftopsparrow/evil-hangman",
+  "devDependencies": {
+    "expect.js": "~0.2.0",
+    "mocha": "~1.16.1"
+  },
+  "dependencies": {
+    "colors": "~0.6.2"
+  }
+}
