@@ -1,0 +1,193 @@
+#!/usr/bin/env node
+
+var colors = require('colors');
+var readline = require('readline');
+
+var dictionary = require('./dictionary');
+var stats = require('./stats');
+
+var game;
+var Game = require('./game');
+
+
+var rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+
+function start() {
+
+  console.log('');
+  console.log('   Welcome to Evil Hangman!'.bold.red);
+  console.log('');
+
+  console.log('   Rules:  Don\'t be stupid.'.green);
+  console.log('           Guess letters.'.green);
+  console.log('           Figure out the word.'.green);
+  console.log('           Lose.'.green);
+
+  console.log('');
+
+  newGame();
+
+}
+
+function wordSize(next) {
+
+  rl.question("   What length of word do you want to guess?   ".grey, function(answer) {
+      
+    console.log('');
+
+    var n = Number(answer);
+
+    if ( isNaN(n) ) {
+      console.log('   Pick an ACTUAL number...'.red);
+      console.log('');
+      console.log('   Lets try this again...'.grey);
+      return wordSize(next);
+    } else if (!stats[n]) {
+      console.log('   There are no words of length '.red + n + ' in the dictionary...'.red);
+      console.log('');
+      console.log('   Lets try this again...'.grey);
+      return wordSize(next);
+    } else {
+      console.log("   I'll think of a word...".grey);
+    }
+
+    next(n);
+
+  });
+}
+
+function newGame() {
+
+  wordSize(function(size){ 
+
+    dictionary.init(size, function(err, words) {
+
+      console.log('');
+      console.log('   Ok...Got one.'.grey);
+
+      game = new Game(words);
+      game.on('miss', miss);
+      game.on('hit', hit);
+      game.on('lose', lost);
+      game.on('win', win);
+      game.on('guessed', guessed);
+
+      // Main interaction
+      main();
+
+    });
+
+  });
+
+}
+
+function getInsult() {
+  var insults = require('./insults');
+  var insult = insults[Math.floor(Math.random() * insults.length)]
+  return insult;
+}
+
+function miss() {
+
+  console.log('');
+  console.log('   Sorry, that is not a letter'.red);
+  console.log('   %s'.cyan, getInsult());
+  console.log('');
+  console.log('   Try again.');
+  
+  main();
+
+}
+
+function hit() {
+
+  console.log('');
+  console.log('   Yes, that letter is in this word.'.green);
+  console.log('   You just got lucky that time!'.cyan);
+  console.log('');
+  console.log('   Go again!')
+
+  main();
+
+}
+
+function guessed() {
+
+  console.log('');
+  console.log('   You already guessed that letter!'.yellow);
+  console.log('   %s'.cyan, getInsult());
+  console.log('');
+  console.log('   Pick a different letter.')
+
+  main();
+
+}
+
+function lost(word) {
+
+  console.log('');
+  console.log('    You lost!    '.inverse);
+  console.log('');
+  console.log('   The word was '.grey + '%s'.cyan.bold.underline, word);
+  console.log('');
+
+  playAgain();
+
+}
+
+function win() {
+  
+  console.log('');
+  console.log('   You WON!   '.rainbow);
+  console.log('   I CANNOT BELIEVE THIS! YOU ARE AMAZING!'.cyan);
+  console.log('');
+
+  playAgain();
+
+}
+
+function playAgain() {
+
+  rl.question('   Play again? (y/n)   ', function(answer) {
+
+    if (/y|yes/i.test(answer)) start();
+    else process.exit(0);
+
+  });
+
+}
+
+function help() {
+
+  console.log('');
+  console.log('   Available: %s'.white, game.choices);
+  console.log('   Used: %s'.magenta, game.guesses);
+  console.log('');
+
+  main();
+
+}
+
+function main() {
+
+  console.log('');
+  console.log('');
+
+  console.log('   %s'.green, game.pattern.split('').join(' '));
+  console.log('   Tries left: %s'.green, game.tries);
+  console.log('');
+  rl.question("   Which letter?   ", function(letter) {
+
+    if (letter === '?') return help();
+    // else if (/[^a-z]/i.test(letter)) badInput();
+    game.guess(letter);
+
+  });
+
+}
+
+
+start();
